@@ -1,0 +1,56 @@
+#!/bin/bash
+
+print_help () {
+	echo "turnin - local turnin, a wrapper of cs turnin"
+	echo "Usage: turnin [grader] [hw] [FILE]...      submit files"
+	echo "       turnin ls [grader] [hw]             list submitted files"
+	echo "       turnin alias [alias] [grader]       give grader a new name"
+	echo "       turnin unalias [alias]              remove the alias"
+	echo 
+	echo "Report bugs to Yuanle Song <sylecn@gmail.com>."
+}
+
+# main()
+case "${1:-''}" in
+	'ls'|'--list')
+		subcommand="ls"
+		shift
+		;;
+	'submit'|'--submit')
+		subcommand="submit"
+		shift
+		;;
+	'alias'|'--alias')
+		subcommand="alias"
+		shift
+		;;
+	'help'|'--help'|'-h')
+		print_help
+		exit 0
+		;;
+	*)
+		subcommand="submit"
+		;;
+esac
+
+case "$subcommand" in
+	'ls')
+		grader="$1"
+		hw="$2"
+		if [ -z "$grader" ] || [ -z "$hw" ]
+		then
+			echo "error: not enough info to run ls"
+		fi
+		;;
+	'submit')
+		;;
+	'alias')
+		;;
+	*)
+		#never reach here
+		echo "warning: bad subcommand: $subcommand"
+		exit 1
+		;;
+esac
+
+exit 0

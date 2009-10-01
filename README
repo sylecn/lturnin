@@ -1,22 +1,41 @@
-* write a turnin wrapper					:programming:
-UI:
-  run at local host on local files, use the same syntax:
-  turnin --submit [grader] [hw-id] [files ...]
-  turnin --list [grader] [hw-id]
+lturnin - local turnin, a turnin wrapper for UT CS students
 
-  or you can omit the --, I don't like typing --:
-  turnin submit [grader] [hw-id] [files ...]
-  turnin list [grader] [hw-id]
+* Description:
 
-  allow add alias for grader:
-  turnin --alias 345h nwetzler
-  turnin alias 371p rekha
+lturnin helps you turn in files on your laptop using the CS turnin system.
+You can run lturnin on your laptop, just like you are running turnin on the CS machine.
 
-  then you can run:
-  turnin --list 345h hw1
+lturnin is designed for linux, don't ask me why it doesn't work on Windows.
 
-Implementation:
-  search/replace alias with <grader> id
-  scp [files] [cs:~/.turnin/<grader>/<hw>/]
-  ssh cs "turnin ..."
-  
+* Usage:
+
+the syntax of the origin turnin is accepted:
+    turnin --submit [grader] [hw] [files ...]
+    turnin --list [grader] [hw]
+
+the following syntax is what I like:
+    turnin [grader] [hw] [files ...]         submit given files
+    turnin ls [grader] [hw-id]               list what's submitted
+
+you can give aliases to graders:
+    turnin --alias 345h nwetzler             345h is now the same as nwetzler
+    turnin alias 371p rekha                  371p is now the same as rekha
+
+* Implementation:
+search/replace alias with <grader> id
+rsync [use filelist option] [files] [cs:~/.turnin/<grader>/<hw>/]
+ssh cs "turnin ..."
+
+Config file:
+~/.turninrc
+stores aliases
+
+Error:
+  turnin [grader] [hw-id]
+  ==> no files to turnin.
+      Usage: ...
+      
+* Dependence:
+ssh
+rsync
+
