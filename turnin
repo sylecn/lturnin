@@ -1,11 +1,51 @@
 #!/bin/bash
 
+############################################################
+#begin user configs
+############################################################
+
+# your cs account username
+#
+# mandatory if it is different from current $USER on your
+# machine. otherwise you can leave it empty.
+CS_USER=""
+
+# one of the public cs linux machine
+#
+# if this one is not working, try another one.
+CS_SERVER="chu-totoro.cs.utexas.edu"
+
+# if you are not login using ssh key, consider using it now.
+# see "man ssh" for more info.
+
+############################################################
+#end user configs
+############################################################
+
+EE_BAD_PARAM=1
+CONF="$HOME/.turninrc"
+
+if [ -e "$CONF" ]
+then
+	. $CONF
+fi
+
+#build ssh command according to user preference
+if ! [ -z "$CS_USER" ]
+then
+	CS_SERVER="${CS_USER}@${CS_SERVER}"
+fi
+
+SSH="ssh -x $CS_SERVER"
+
 print_help () {
 	echo "turnin - local turnin, a wrapper of cs turnin"
 	echo "Usage: turnin [grader] [hw] [FILE]...      submit files"
 	echo "       turnin ls [grader] [hw]             list submitted files"
 	echo "       turnin alias [alias] [grader]       give grader a new name"
 	echo "       turnin unalias [alias]              remove the alias"
+	echo
+	echo "If you are commiting a dir, don't add / at the end of the dir name."
 	echo 
 	echo "Report bugs to Yuanle Song <sylecn@gmail.com>."
 }
@@ -39,18 +79,36 @@ case "$subcommand" in
 		hw="$2"
 		if [ -z "$grader" ] || [ -z "$hw" ]
 		then
-			echo "error: not enough info to run ls"
+			echo "turnin: error: ls: not enough parameters."
+			echo "run turnin --help for more info."
+			exit $EE_BAD_PARAM
 		fi
+		$SSH "\"turnin --list $grader $hw\""
 		;;
 	'submit')
+		grader="$1"
+		hw="$2"
+		shift 2
+		if [ -z "$grader" ] || [ -z "$hw" ] || [ -z "$*" ]
+		then
+			echo "turnin: error: submit: not enough parameters"
+			echo "run turnin --help for more info."
+			exit $EE_BAD_PARAM
+		fi
+
+		#transfer files using rsync, then submit
+		remote_dir="~/.turnin/$grader/$hw/"
+		$SSH "mkdir -p $remote_dir"
+		rsync -i -a -r $* $CS_SERVER:$remote_dir
+		$SSH "cd $remote_dir && turnin $grader $hw $*"
 		;;
 	'alias')
 		;;
 	*)
 		#never reach here
 		echo "warning: bad subcommand: $subcommand"
-		exit 1
+		exit $EE_BAD_PARAM
 		;;
 esac
 
-exit 0
+

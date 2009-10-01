@@ -30,12 +30,11 @@ Config file:
 ~/.turninrc
 stores aliases
 
-Error:
-  turnin [grader] [hw-id]
-  ==> no files to turnin.
-      Usage: ...
-      
 * Dependence:
 ssh
 rsync
 
+* tests
+  filename contains spaces
+
+  
