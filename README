@@ -1,0 +1,22 @@
+* write a turnin wrapper					:programming:
+UI:
+  run at local host on local files, use the same syntax:
+  turnin --submit [grader] [hw-id] [files ...]
+  turnin --list [grader] [hw-id]
+
+  or you can omit the --, I don't like typing --:
+  turnin submit [grader] [hw-id] [files ...]
+  turnin list [grader] [hw-id]
+
+  allow add alias for grader:
+  turnin --alias 345h nwetzler
+  turnin alias 371p rekha
+
+  then you can run:
+  turnin --list 345h hw1
+
+Implementation:
+  search/replace alias with <grader> id
+  scp [files] [cs:~/.turnin/<grader>/<hw>/]
+  ssh cs "turnin ..."
+  
