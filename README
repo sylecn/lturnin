@@ -139,7 +139,9 @@ filename contains spaces
 ** DONE add "rmalias" command.
 ** DONE check availability of the commands listed in [Dependence].
    add option -f --force
-** add "username" command.
+** add "setuser" command.
+** "turnin ls" without param list last committed homework by default
+** write a wrapper for using on cs machine, that supports aliases and patterns
 
 * Reporting Bugs
 
