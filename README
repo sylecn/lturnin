@@ -95,6 +95,10 @@ CS_USER="sylecn"
 ** final implementation
 read the code your self.
 
+~/.turninrc stores user configs, aliases, patterns.
+$remote:~/.turnin/ stores files you tried to commit.
+rsync is used to transfer the files efficiently, only transfer delta data.
+
 * Dependence:
 ssh
 rsync
