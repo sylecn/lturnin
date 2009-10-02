@@ -83,7 +83,7 @@ case "$subcommand" in
 			echo "run turnin --help for more info."
 			exit $EE_BAD_PARAM
 		fi
-		$SSH "\"turnin --list $grader $hw\""
+		$SSH "turnin --list $grader $hw"
 		;;
 	'submit')
 		grader="$1"
