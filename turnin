@@ -22,6 +22,93 @@ CS_SERVER="chu-totoro.cs.utexas.edu"
 #end user configs
 ############################################################
 
+DEBUG=1
+## debug output
+debug () {
+	[ $DEBUG -eq 1 ] && echo "$*"
+}
+
+## check whether given alias exists
+# Usage: boolean exists_alias [alias]
+exists_alias () {
+	grep -q "alias $1=" $CONF
+	if [ $? -eq 0 ]; then
+		return 0
+	else
+		return 1
+	fi
+}
+
+## check whether given hw pattern exists
+# Usage: boolean exists_pattern [pattern]
+exists_pattern () {
+	grep -q "pattern $1=" $CONF
+	if [ $? -eq 0 ]; then
+		return 0
+	else
+		return 1
+	fi
+}
+
+## remove given alias
+# Usage: void remove_alias [alias]
+remove_alias () {
+	mv $CONF $CONF.bak
+	sed "/# alias $1=/d" $CONF.bak > $CONF
+}
+
+## remove given pattern
+# Usage: void remove_pattern [pattern]
+remove_pattern () {
+	mv $CONF $CONF.bak
+	sed "/# pattern $1=/d" $CONF.bak > $CONF
+}
+
+## try to find a match for given alias
+# Usage boolean try_parse_alias [alias]
+# if return true, the expand for the alias is stored in $result
+try_parse_alias () {
+	if exists_alias $1; then
+		result=`grep "# alias $1=" $CONF | cut -d "=" -f 2`
+		return 0
+	else
+		return 1
+	fi
+}
+
+## try to find a match for given pattern
+# Usage boolean try_parse_pattern [pattern]
+# if return true, the grader will be in $result, the prefix will be in $prefix
+try_parse_pattern () {
+	if exists_pattern $1; then
+		grepresult=`grep "# pattern $1=" $CONF | cut -d "=" -f 2`
+		result=`echo $grepresult | cut -d " " -f 1`
+		prefix=`echo $grepresult | cut -d " " -f 2`
+		return 0
+	else
+		return 1
+	fi
+}
+
+## try to parse $grade, if it is a pattern, update $grade and $hw;
+## if it is an alias, update $grade;
+## if it is nothing, do nothing, just return.
+# Usage void try_parse_pattern
+try_parse_patterns_and_aliases () {
+	if try_parse_pattern $grader; then
+		debug "hw pattern found for: $grader"
+		grader=$result
+		hw=${prefix}${hw}
+		debug "grader is $grader, hw is $hw"
+	else
+		if try_parse_alias $grader; then
+			debug "alias found for: $grader"
+			grader=$result
+			debug "grader is $grader"
+		fi
+	fi
+}
+
 EE_BAD_PARAM=1
 EE_UNALIAS_FAILURE=2
 
@@ -49,6 +136,10 @@ print_help () {
 	echo "       turnin unalias [alias]              remove the alias"
 	echo "       turnin alias                        list known aliases"
 	echo
+	echo "       turnin pattern [class] [grader] [hw-prefix]"
+	echo "                                           define a hw pattern"
+	echo "       turnin rmpattern [class]            remove the hw pattern"
+	echo "       turnin pattern                      list known hw patterns"
 	echo
 	echo "If you are commiting a dir, don't add / at the end of the dir name."
 	echo 
@@ -66,15 +157,27 @@ case "${1:-''}" in
 		shift
 		;;
 	'alias'|'--alias')
-		subcommand="alias"
+		subcommand="newalias"
 		shift
 		if [ $# -eq 0 ]
 		then
-			subcommand="listalias"
+			subcommand="listaliases"
 		fi
 		;;
 	'unalias'|'--unalias')
 		subcommand="unalias"
+		shift
+		;;
+	'pattern'|'--pattern')
+		subcommand="newpattern"
+		shift
+		if [ $# -eq 0 ]
+		then
+			subcommand="listpatterns"
+		fi
+		;;
+	'rmpattern'|'--rmpattern')
+		subcommand="rmpattern"
 		shift
 		;;
 	'help'|'--help'|'-h')
@@ -96,6 +199,9 @@ case "$subcommand" in
 			echo "run turnin --help for more info."
 			exit $EE_BAD_PARAM
 		fi
+
+		try_parse_patterns_and_aliases
+		
 		$SSH "turnin --list $grader $hw"
 		;;
 	'submit')
@@ -109,13 +215,15 @@ case "$subcommand" in
 			exit $EE_BAD_PARAM
 		fi
 
+		try_parse_patterns_and_aliases
+
 		#transfer files using rsync, then submit
 		remote_dir="~/.turnin/$grader/$hw/"
 		$SSH "mkdir -p $remote_dir"
 		rsync -i -a -r $* $CS_SERVER:$remote_dir
 		$SSH "cd $remote_dir && turnin $grader $hw $*"
 		;;
-	'alias')
+	'newalias')
 		newname="$1"
 		grader="$2"
 		if [ -z "$newname" ] || [ -z "$grader" ]
@@ -124,7 +232,14 @@ case "$subcommand" in
 			echo "run turnin --help for more info."
 			exit $EE_BAD_PARAM
 		fi
+		
+		#if alias already exists, rm old def before adding new def.
+		if exists_alias $newname; then
+			remove_alias $newname
+		fi
+		
 		echo "# alias ${newname}=${grader}" >> $CONF
+		
 		exit 0
 		;;
 	'unalias')
@@ -135,20 +250,65 @@ case "$subcommand" in
 			echo "run turnin --help for more info."
 			exit $EE_BAD_PARAM
 		fi
-		grep -q "alias ${newname}=" $CONF
-		if [ $? -eq 0 ]
-		then
-			mv $CONF $CONF.bak
-			sed "/# alias ${newname}=/d" $CONF.bak > $CONF
+
+		if exists_alias $newname; then
+			remove_alias $newname
 			exit 0
 		else
 			echo "turnin: error: unalias: ${newname} not found"
 			exit $EE_UNALIAS_FAILURE
 		fi
 		;;
-	'listalias')
+	'listaliases')
 		[ -e "$CONF" ] || exit 0
-		grep "=[^\"]" $CONF | cut -d " " --complement -f 1
+		grep "# alias " $CONF | cut -d " " --complement -f 1
+		exit 0
+		;;
+	'newpattern')
+		patternname="$1"
+		grader="$2"
+		hwprefix="$3"
+		if [ -z "$patternname" ] || [ -z "$grader" ] || [ -z "$hwprefix" ]
+		then
+			echo "turnin: error: pattern: not enough parameters"
+			echo "run turnin --help for more info."
+			exit $EE_BAD_PARAM
+		fi
+
+		if exists_pattern $patternname; then
+			remove_pattern $patternname
+		fi
+
+		#try to parse possible grader alias
+		if try_parse_alias $grader; then
+			debug "using grader alias when defining pattern"
+			grader=$result
+			debug "grader is $grader"
+		fi
+		
+		echo "# pattern ${patternname}=${grader} ${hwprefix}" >> $CONF
+		exit 0
+		;;
+	'rmpattern')
+		patternname="$1"
+		if [ -z "$patternname" ]
+		then
+			echo "turnin: error: rmpattern: not enough parameters"
+			echo "run turnin --help for more info."
+			exit $EE_BAD_PARAM
+		fi
+
+		if exists_pattern $patternname; then
+			remove_pattern $patternname
+			exit 0
+		else
+			echo "turnin: error: rmpattern: ${patternname} not found"
+			exit $EE_UNALIAS_FAILURE
+		fi
+		;;
+	'listpatterns')
+		[ -e "$CONF" ] || exit 0
+		grep "# pattern " $CONF | cut -d " " --complement -f 1
 		exit 0
 		;;
 	*)
@@ -157,5 +317,4 @@ case "$subcommand" in
 		exit $EE_BAD_PARAM
 		;;
 esac
-
 
