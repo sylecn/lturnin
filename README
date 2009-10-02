@@ -11,6 +11,34 @@ Claims:
 lturnin is designed for linux, don't ask me why it doesn't work on Windows.
 lturnin recommands you login to cs machine using ssh keys.
 
+* Dependence:
+lturnin needs these programs to function correctly:
+ssh
+rsync
+grep
+sed
+which
+
+Most distros already have ssh, grep, sed, which installed by default. You may
+need to install rsync manually.
+
+ubuntu:
+sudo aptitude install rsync
+
+debian:
+su -c aptitude install rsync
+
+fedora:
+su -c yum install rsync
+
+* Installation:
+add executable privilege on turnin script, then put it in one of your $PATH dir.
+
+typically:
+chmod +x turnin
+sudo cp turnin /usr/local/bin/
+or cp turnin ~/bin/
+
 * Usage:
 
 lturnin accepts parameter in option form (ex. --submit) and in command form
@@ -101,12 +129,6 @@ read the code your self.
 ~/.turninrc stores user configs, aliases, patterns.
 $remote:~/.turnin/ stores files you tried to commit.
 rsync is used to transfer the files efficiently, only transfer delta data.
-
-* Dependence:
-ssh
-rsync
-grep
-sed
 
 * Tests
 filename contains spaces
