@@ -31,7 +31,7 @@ debug () {
 ## check whether given alias exists
 # Usage: boolean exists_alias [alias]
 exists_alias () {
-	grep -q "alias $1=" $CONF
+	grep -s "alias $1=" $CONF
 	if [ $? -eq 0 ]; then
 		return 0
 	else
@@ -42,7 +42,7 @@ exists_alias () {
 ## check whether given hw pattern exists
 # Usage: boolean exists_pattern [pattern]
 exists_pattern () {
-	grep -q "pattern $1=" $CONF
+	grep -s "pattern $1=" $CONF
 	if [ $? -eq 0 ]; then
 		return 0
 	else
