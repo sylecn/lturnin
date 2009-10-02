@@ -17,10 +17,11 @@ ssh
 rsync
 grep
 sed
+cut
 which
 
-Most distros already have ssh, grep, sed, which installed by default. You may
-need to install rsync manually.
+Most distros already have most of these installed by default. You may need to
+install rsync manually though.
 
 ubuntu:
 sudo aptitude install rsync

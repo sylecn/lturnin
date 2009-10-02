@@ -271,8 +271,8 @@ esac
 # first time the user run turnin command other than --help.
 
 #check command dependence
-if ! commands_are_available ssh rsync grep sed; then
-	echo "turnin: warning: turnin needs ssh, rsync, grep and sed to be fully operational."
+if ! commands_are_available ssh rsync grep sed cut; then
+	echo "turnin: warning: turnin needs ssh, rsync, grep, sed and cut to be fully operational."
 	echo "I strongly recommend you install all these tools."
 	echo "Use -f option if you want to force run."
 	if [ -z "$forcerun" ]; then
