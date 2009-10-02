@@ -148,7 +148,7 @@ print_help () {
 
 # main()
 case "${1:-''}" in
-	'ls'|'--list')
+	'ls'|'--ls'|'list'|'--list')
 		subcommand="ls"
 		shift
 		;;

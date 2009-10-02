@@ -6,33 +6,75 @@ lturnin helps you turn in files on your laptop using the CS turnin system.
 You can run lturnin on your laptop, just like you are running turnin on the CS machine.
 
 lturnin is designed for linux, don't ask me why it doesn't work on Windows.
+lturnin recommands you login to cs machine using ssh keys.
 
 * Usage:
 
-the syntax of the origin turnin is accepted:
-    turnin --submit [grader] [hw] [files...]
-    turnin --list [grader] [hw]
+lturnin accepts parameter in option form (ex. --submit) and in command form
+(ex. submit). All parameters, namely, ls (list), submit, alias, unalias,
+pattern, rmpattern, help, accept both syntax.
 
-the following syntax is what I like:
-    turnin [grader] [hw] [files...]          submit given files
-    turnin ls [grader] [hw-id]               list what's submitted
+** get help
+Get a brief list of commands avaliable:
+    turnin --help 
 
-you can give aliases to graders:
+** basic usage
+The syntax of the origin turnin is accepted in lturnin:
+    turnin --submit [grader] [hw] [files...]    submit given files
+    turnin --list [grader] [hw]                 list what's submitted
+
+The recommanded equivalent shorthand syntax is:
+    turnin [grader] [hw] [files...]             submit given files
+    turnin ls [grader] [hw]                     list what's submitted
+
+Notice, if you are submiting directories, don't put a slash at the end,
+i.e. use foo instead of foo/. Directories will be turned in recursively.
+
+However that's not the end of the story. I recommand you using aliases and
+patterns whenever possible.
+
+** aliases
+An alias is used to represent a grader. Wherever you need a <grader> you can
+use the grader's alias as well.
+
+Add aliases for graders:
     turnin --alias 345hta nwetzler           345hta is another name for nwetzler
     turnin alias 371pta rekha                371pta is another name for rekha
 
-you can define a hw pattern for your classes:
-this is only useful when homeworks have a common prefix.
-    turnin addclass [class] [grader] [hw-prefix]
-    turnin addclass 371p rekha cs371pj         now 371phw is a hw pattern
-after that you can use the hw pattern when submiting/listing:
-    turnin 371phw 3 [files...]                 submit to hw #3 for class 371p
-    turnin ls 371phw 2                         list hw #2 for class 371p
+You can add as many alias for the same grader as you want.
+You can redefine an existing alias. New value will override old value.
 
-check what classes you have defined:
-    turnin listclass
+Remove alias:
+    turnin unalias <alias>
+
+List all aliases you have defined:
+    turnin alias
+
+** patterns
+A pattern contains a <grader> and a <prefix>, it is used to generate the
+<grader> and <homework>. A pattern is useful when homeworks have a common
+prefix. For example, in CS 371p the homeworks are named cs371pj[1-9].
+
+You can define a hw pattern for it:
+    turnin pattern 371p rekha cs371pj          now 371p is a hw pattern
+
+After that you can use the hw pattern when doing submit or list command:
+    turnin 371p 3 [files...]                 submit to cs371pj3
+    turnin ls 371p 3                         list cs371pj3
+# These two commands will be translated to:
+#     turnin rekha cs371pj3 [files...]         submit files to cs371pj3
+#     turnin ls rekha cs371pj3                 list submitted files for cs371pj3
+
+Remove a pattern:
+    turnin rmpattern <pattern>
+
+check patterns you have defined:
+    turnin pattern
+
+You can redefine an existing pattern. New value will override old value.
 
 * Implementation:
+** brainstorm
 search/replace alias with <grader> id
 rsync [use filelist option] [files] [cs:~/.turnin/<grader>/<hw>/]
 ssh cs "turnin ..."
@@ -44,23 +86,25 @@ aliases
 hw patterns
 for example:
 ------------
-#configs
 CS_USER="sylecn"
-#alias
-371pta=rekha
-345hta=nwetzler
-#hw patterns
-371p="rekha cs371pj"
-345h="nwetzler hw"
+# alias 371pta=rekha
+# alias 345hta=nwetzler
+# pattern 371p=rekha cs371pj
+# pattern 345h=nwetzler hw
+
+** final implementation
+read the code your self.
 
 * Dependence:
 ssh
 rsync
+grep
+sed
 
-* tests
-  filename contains spaces
+* Tests
+filename contains spaces
 
-try turnin default.css
-upload to host56 as well
-
-
+* TODO
+Ask username when first time run. (no $CONF found)
+add "rmalias" command.
+check availability of the commands listed in [Dependence].
