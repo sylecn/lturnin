@@ -326,7 +326,7 @@ case "$subcommand" in
 		#transfer files using rsync, then submit
 		remote_dir="~/.turnin/$grader/$hw/"
 		$SSH "mkdir -p $remote_dir"
-		rsync -i -a -r $* $CS_SERVER:$remote_dir
+		rsync -e ssh -i -a -r $* $CS_SERVER:$remote_dir
 		$SSH "cd $remote_dir && turnin $grader $hw $*"
 		;;
 	'newalias')
