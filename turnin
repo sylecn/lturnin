@@ -327,7 +327,7 @@ case "$subcommand" in
 		remote_dir="~/.turnin/$grader/$hw/"
 		$SSH "mkdir -p $remote_dir"
 		rsync -e ssh -i -a -r $* $CS_SERVER:$remote_dir
-		$SSH "cd $remote_dir && turnin $grader $hw $*"
+		$SSH "cd $remote_dir && turnin --submit $grader $hw $*"
 		;;
 	'newalias')
 		newname="$1"
