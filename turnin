@@ -23,6 +23,8 @@ CS_SERVER="chu-totoro.cs.utexas.edu"
 ############################################################
 
 EE_BAD_PARAM=1
+EE_UNALIAS_FAILURE=2
+
 CONF="$HOME/.turninrc"
 
 if [ -e "$CONF" ]
@@ -42,8 +44,11 @@ print_help () {
 	echo "turnin - local turnin, a wrapper of cs turnin"
 	echo "Usage: turnin [grader] [hw] [FILE]...      submit files"
 	echo "       turnin ls [grader] [hw]             list submitted files"
+	echo
 	echo "       turnin alias [alias] [grader]       give grader a new name"
 	echo "       turnin unalias [alias]              remove the alias"
+	echo "       turnin alias                        list known aliases"
+	echo
 	echo
 	echo "If you are commiting a dir, don't add / at the end of the dir name."
 	echo 
@@ -62,6 +67,14 @@ case "${1:-''}" in
 		;;
 	'alias'|'--alias')
 		subcommand="alias"
+		shift
+		if [ $# -eq 0 ]
+		then
+			subcommand="listalias"
+		fi
+		;;
+	'unalias'|'--unalias')
+		subcommand="unalias"
 		shift
 		;;
 	'help'|'--help'|'-h')
@@ -103,10 +116,44 @@ case "$subcommand" in
 		$SSH "cd $remote_dir && turnin $grader $hw $*"
 		;;
 	'alias')
+		newname="$1"
+		grader="$2"
+		if [ -z "$newname" ] || [ -z "$grader" ]
+		then
+			echo "turnin: error: alias: not enough parameters"
+			echo "run turnin --help for more info."
+			exit $EE_BAD_PARAM
+		fi
+		echo "# alias ${newname}=${grader}" >> $CONF
+		exit 0
+		;;
+	'unalias')
+		newname="$1"
+		if [ -z "$newname" ]
+		then
+			echo "turnin: error: unalias: not enough parameters"
+			echo "run turnin --help for more info."
+			exit $EE_BAD_PARAM
+		fi
+		grep -q "alias ${newname}=" $CONF
+		if [ $? -eq 0 ]
+		then
+			mv $CONF $CONF.bak
+			sed "/# alias ${newname}=/d" $CONF.bak > $CONF
+			exit 0
+		else
+			echo "turnin: error: unalias: ${newname} not found"
+			exit $EE_UNALIAS_FAILURE
+		fi
+		;;
+	'listalias')
+		[ -e "$CONF" ] || exit 0
+		grep "=[^\"]" $CONF | cut -d " " --complement -f 1
+		exit 0
 		;;
 	*)
 		#never reach here
-		echo "warning: bad subcommand: $subcommand"
+		echo "turnin: warning: bad subcommand: $subcommand"
 		exit $EE_BAD_PARAM
 		;;
 esac
