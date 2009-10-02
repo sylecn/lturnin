@@ -1,14 +1,62 @@
 #!/bin/bash
 
-############################################################
+#============================================================
+# Functions
+#============================================================
+
+print_help () {
+	echo "turnin - local turnin, a wrapper of cs turnin"
+	echo "Usage: turnin [-f] [sub-command] [sub-command-options]"
+	echo
+	echo "       turnin [grader] [hw] [FILE]...      submit files"
+	echo "       turnin ls [grader] [hw]             list submitted files"
+	echo
+	echo "       turnin alias [alias] [grader]       give grader a new name"
+	echo "       turnin unalias [alias]              remove the alias"
+	echo "       turnin alias                        list known aliases"
+	echo
+	echo "       turnin pattern [class] [grader] [hw-prefix]"
+	echo "                                           define a hw pattern"
+	echo "       turnin rmpattern [class]            remove the hw pattern"
+	echo "       turnin pattern                      list known hw patterns"
+	echo
+	echo "If you are commiting a dir, don't add / at the end of the dir name."
+	echo 
+	echo "Report bugs to Yuanle Song <sylecn@gmail.com>."
+}
+
+## debug output
+debug () {
+	[ $DEBUG -eq 1 ] && echo "$*"
+}
+
+## check whether given commands are avaliable
+# Usage: boolean commands_are_available [commands...]
+commands_are_available () {
+	if [ -z "$*" ]; then
+		return 0
+	fi
+	which $* >/dev/null 2>&1
+	if [ $? -eq 0 ]; then
+		return 0
+	else
+		return 1
+	fi
+}
+
+## build a config file
+# Usage: void build_conf_file <csusername>
+build_conf_file () {
+	cat >$CONF <<EOF
+#------------------------------------------------------------
 #begin user configs
-############################################################
+#------------------------------------------------------------
 
 # your cs account username
 #
 # mandatory if it is different from current $USER on your
 # machine. otherwise you can leave it empty.
-CS_USER=""
+CS_USER="$1"
 
 # one of the public cs linux machine
 #
@@ -18,14 +66,14 @@ CS_SERVER="chu-totoro.cs.utexas.edu"
 # if you are not login using ssh key, consider using it now.
 # see "man ssh" for more info.
 
-############################################################
+#------------------------------------------------------------
 #end user configs
-############################################################
+#------------------------------------------------------------
 
-DEBUG=0
-## debug output
-debug () {
-	[ $DEBUG -eq 1 ] && echo "$*"
+#------------------------------------------------------------
+#aliases and patterns
+#------------------------------------------------------------
+EOF
 }
 
 ## check whether given alias exists
@@ -109,15 +157,28 @@ try_parse_patterns_and_aliases () {
 	fi
 }
 
+#============================================================
+# Variables
+#============================================================
+
+## set to 1 to enable debug output
+DEBUG=0
+
 EE_BAD_PARAM=1
 EE_UNALIAS_FAILURE=2
 EE_DEPENDENCE_NOT_SATISFIED=3
 
 CONF="$HOME/.turninrc"
 
-if [ -e "$CONF" ]
-then
+#default value
+CS_USER=""
+CS_SERVER="chu-totoro.cs.utexas.edu"
+
+if [ -e "$CONF" ]; then
+	foundconf="$CONF"
 	. $CONF
+else
+	foundconf=""
 fi
 
 #build ssh command according to user preference
@@ -128,36 +189,21 @@ fi
 
 SSH="ssh -x $CS_SERVER"
 
-print_help () {
-	echo "turnin - local turnin, a wrapper of cs turnin"
-	echo "Usage: turnin [grader] [hw] [FILE]...      submit files"
-	echo "       turnin ls [grader] [hw]             list submitted files"
-	echo
-	echo "       turnin alias [alias] [grader]       give grader a new name"
-	echo "       turnin unalias [alias]              remove the alias"
-	echo "       turnin alias                        list known aliases"
-	echo
-	echo "       turnin pattern [class] [grader] [hw-prefix]"
-	echo "                                           define a hw pattern"
-	echo "       turnin rmpattern [class]            remove the hw pattern"
-	echo "       turnin pattern                      list known hw patterns"
-	echo
-	echo "If you are commiting a dir, don't add / at the end of the dir name."
-	echo 
-	echo "Report bugs to Yuanle Song <sylecn@gmail.com>."
-}
-
+#============================================================
 # main()
-
-#check command dependence
-which ssh rsync grep sed >/dev/null 2>&1
-if [ $? -ne 0 ]; then
-	echo "turnin: error: turnin needs ssh, rsync, grep and sed."
-	echo "Please install these tools and retry."
-	exit $EE_DEPENDENCE_NOT_SATISFIED
-fi
+#============================================================
 
 #parse options
+if [ -z "$1" ]; then
+	print_help
+	exit 0
+fi
+
+if [ "$1" = "-f" ] || [ "$1" = "--force" ]; then
+	forcerun=1
+	shift
+fi
+
 case "${1:-''}" in
 	'ls'|'--ls'|'list'|'--list')
 		subcommand="ls"
@@ -199,6 +245,33 @@ case "${1:-''}" in
 		subcommand="submit"
 		;;
 esac
+
+# first time the user run turnin command other than --help.
+
+#check command dependence
+if ! commands_are_available ssh rsync grep sed; then
+	echo "turnin: warning: turnin needs ssh, rsync, grep and sed to be fully operational."
+	echo "I strongly recommend you install all these tools."
+	echo "Use -f option if you want to force run."
+	if [ -z "$forcerun" ]; then
+		exit $EE_DEPENDENCE_NOT_SATISFIED
+	fi
+fi
+
+#build config file
+if [ -z "$foundconf" ]; then
+	#first time user
+	#create $CONF and alert the user to set CS_USER
+	echo "This is the first time you run turnin."
+	echo -n "What's your cs account username [$USER]:"
+	read input_username
+	if ! [ -z "$input_username" ]; then
+		CS_USER="$input_username"
+		echo "Username saved in file $CONF."
+	fi
+
+	build_conf_file $CS_USER
+fi
 
 case "$subcommand" in
 	'ls')

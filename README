@@ -105,6 +105,8 @@ sed
 filename contains spaces
 
 * TODO
-** Ask username when first time run. (no $CONF found)
+** DONE Ask username when first time run. (no $CONF found)
 ** DONE add "rmalias" command.
 ** DONE check availability of the commands listed in [Dependence].
+   add option -f --force
+** add "username" command.
