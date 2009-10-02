@@ -111,6 +111,7 @@ try_parse_patterns_and_aliases () {
 
 EE_BAD_PARAM=1
 EE_UNALIAS_FAILURE=2
+EE_DEPENDENCE_NOT_SATISFIED=3
 
 CONF="$HOME/.turninrc"
 
@@ -147,6 +148,16 @@ print_help () {
 }
 
 # main()
+
+#check command dependence
+which ssh rsync grep sed >/dev/null 2>&1
+if [ $? -ne 0 ]; then
+	echo "turnin: error: turnin needs ssh, rsync, grep and sed."
+	echo "Please install these tools and retry."
+	exit $EE_DEPENDENCE_NOT_SATISFIED
+fi
+
+#parse options
 case "${1:-''}" in
 	'ls'|'--ls'|'list'|'--list')
 		subcommand="ls"

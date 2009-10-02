@@ -107,4 +107,4 @@ filename contains spaces
 * TODO
 ** Ask username when first time run. (no $CONF found)
 ** DONE add "rmalias" command.
-** check availability of the commands listed in [Dependence].
+** DONE check availability of the commands listed in [Dependence].
