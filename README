@@ -10,16 +10,27 @@ lturnin is designed for linux, don't ask me why it doesn't work on Windows.
 * Usage:
 
 the syntax of the origin turnin is accepted:
-    turnin --submit [grader] [hw] [files ...]
+    turnin --submit [grader] [hw] [files...]
     turnin --list [grader] [hw]
 
 the following syntax is what I like:
-    turnin [grader] [hw] [files ...]         submit given files
+    turnin [grader] [hw] [files...]          submit given files
     turnin ls [grader] [hw-id]               list what's submitted
 
 you can give aliases to graders:
-    turnin --alias 345h nwetzler             345h is now the same as nwetzler
-    turnin alias 371p rekha                  371p is now the same as rekha
+    turnin --alias 345hta nwetzler           345hta is another name for nwetzler
+    turnin alias 371pta rekha                371pta is another name for rekha
+
+you can define a hw pattern for your classes:
+this is only useful when homeworks have a common prefix.
+    turnin addclass [class] [grader] [hw-prefix]
+    turnin addclass 371p rekha cs371pj         now 371phw is a hw pattern
+after that you can use the hw pattern when submiting/listing:
+    turnin 371phw 3 [files...]                 submit to hw #3 for class 371p
+    turnin ls 371phw 2                         list hw #2 for class 371p
+
+check what classes you have defined:
+    turnin listclass
 
 * Implementation:
 search/replace alias with <grader> id
@@ -28,7 +39,19 @@ ssh cs "turnin ..."
 
 Config file:
 ~/.turninrc
-stores aliases
+user configs
+aliases
+hw patterns
+for example:
+------------
+#configs
+CS_USER="sylecn"
+#alias
+371pta=rekha
+345hta=nwetzler
+#hw patterns
+371p="rekha cs371pj"
+345h="nwetzler hw"
 
 * Dependence:
 ssh
@@ -37,4 +60,7 @@ rsync
 * tests
   filename contains spaces
 
-  
+try turnin default.css
+upload to host56 as well
+
+
