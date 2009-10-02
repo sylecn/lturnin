@@ -158,23 +158,23 @@ case "${1:-''}" in
 		;;
 	'alias'|'--alias')
 		subcommand="newalias"
-		shift
 		if [ $# -eq 0 ]
 		then
 			subcommand="listaliases"
 		fi
+		shift
 		;;
-	'unalias'|'--unalias')
+	'unalias'|'--unalias'|'rmalias'|'--rmalias')
 		subcommand="unalias"
 		shift
 		;;
 	'pattern'|'--pattern')
 		subcommand="newpattern"
-		shift
 		if [ $# -eq 0 ]
 		then
 			subcommand="listpatterns"
 		fi
+		shift
 		;;
 	'rmpattern'|'--rmpattern')
 		subcommand="rmpattern"
