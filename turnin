@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -x
+
 ############################################################
 #begin user configs
 ############################################################
@@ -22,7 +24,7 @@ CS_SERVER="chu-totoro.cs.utexas.edu"
 #end user configs
 ############################################################
 
-DEBUG=1
+DEBUG=0
 ## debug output
 debug () {
 	[ $DEBUG -eq 1 ] && echo "$*"
@@ -31,7 +33,7 @@ debug () {
 ## check whether given alias exists
 # Usage: boolean exists_alias [alias]
 exists_alias () {
-	grep -s "alias $1=" $CONF
+	grep -s "alias $1=" $CONF >/dev/null 2>&1
 	if [ $? -eq 0 ]; then
 		return 0
 	else
@@ -42,7 +44,7 @@ exists_alias () {
 ## check whether given hw pattern exists
 # Usage: boolean exists_pattern [pattern]
 exists_pattern () {
-	grep -s "pattern $1=" $CONF
+	grep -s "pattern $1=" $CONF >/dev/null 2>&1
 	if [ $? -eq 0 ]; then
 		return 0
 	else
