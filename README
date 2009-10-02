@@ -1,10 +1,13 @@
-lturnin - local turnin, a turnin wrapper for UT CS students
+lturnin - local turnin, run turnin on non cs machine directly.
 
 * Description:
 
-lturnin helps you turn in files on your laptop using the CS turnin system.
-You can run lturnin on your laptop, just like you are running turnin on the CS machine.
+lturnin helps you turn in files on your laptop (in fact, any networked
+computer) using the CS turnin system.  You can run turnin on your laptop, just
+like you are running turnin on the CS machine.  You can define grader aliases
+and homework patterns to make life easier.
 
+Claims:
 lturnin is designed for linux, don't ask me why it doesn't work on Windows.
 lturnin recommands you login to cs machine using ssh keys.
 
@@ -114,3 +117,33 @@ filename contains spaces
 ** DONE check availability of the commands listed in [Dependence].
    add option -f --force
 ** add "username" command.
+
+* Reporting Bugs
+
+Report bugs to Yuanle Song <sylecn@gmail.com>.
+
+* Copyright
+
+Copyright © 2009 Yuanle Song <sylecn@gmail.com>
+License  GPLv3+:
+GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.
+
+This file is part of lturnin.
+
+Copyright © 2009 Yuanle Song <sylecn@gmail.com>
+License  GPLv3+:
+GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.
+
+lturnin is free software: you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+lturnin is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
